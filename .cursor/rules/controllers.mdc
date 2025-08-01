@@ -1,0 +1,31 @@
+---
+description:
+globs: app/controllers/**/*.rb
+alwaysApply: false
+---
+
+# Controllerの実装規約
+
+## アクションの定義
+
+- Controllerには`routes.rb`でresourcesおよびresourceによって宣言できるアクション（index, show, create, update, destroy）のみを定義する（DHHルーティング）
+
+### 良い例
+
+```ruby
+class ThingsController < ApplicationController
+  def create
+    # 単一作成の処理
+  end
+end
+```
+
+### 悪い例
+
+```ruby
+class ThingsController < ApplicationController
+  def bulk_create
+    # 複数のレコードを一括作成する処理
+  end
+end
+```

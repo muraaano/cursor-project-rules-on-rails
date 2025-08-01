@@ -1,0 +1,12 @@
+---
+description:
+globs: app/policies/**/*.rb
+alwaysApply: false
+---
+
+# Policyの実装規約
+
+## 基本方針
+
+- 認可ロジックはPolicyに実装する
+- Policyは`app/policies`に配置する

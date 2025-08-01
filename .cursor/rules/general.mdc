@@ -1,0 +1,78 @@
+---
+description: Ruby on Railsのコーディング規約
+globs: 
+alwaysApply: true
+---
+# コーディング規約
+
+Ruby on Rails全体に関わるコーディングのルールです。
+より具体的なルールは、それぞれのファイルに記載されています。（controllers.mdcなど）
+
+## アプリケーション構成
+
+- `app/controllers/`: API エンドポイントの制御
+- `app/serializers/`: APIレスポンスのシリアライズ
+- `app/decorators/`: オブジェクトの表示ロジック
+- `app/jobs/`: 非同期処理
+- `app/models/`: モデル
+- `app/policies/`: 認可ロジック
+- `app/validators/`: カスタムバリデーション
+
+## 責務の分離
+
+- 認可ロジックは`policies`に配置
+- 表示に関するロジックは`decorators`に配置
+
+## 命名規則
+
+- クラス名は目的を明確に表す名前をつける
+- メソッド名は動詞で始める
+- 副作用があるメソッド（データの作成・更新・削除など）には末尾に「!」をつける
+- 変数名は意味が分かりやすい名前をつける
+
+## 共通処理の抽出
+
+- 複数のモデルで使用される共通のバリデーションは基底クラスに実装する
+- 共通のバリデータは再利用可能な形で実装する
+
+## API設計
+
+### レスポンス形式
+
+- JSON シリアライザとして Blueprinter を使用
+- API スキーマ検証には Committee Rails を使用
+
+### エラーハンドリング
+
+- 適切なHTTPステータスコードを使用
+- エラーレスポンスは一貫した形式で返す
+
+## 監視とロギング
+
+### ログ
+
+- 重要な操作は必ずログを残す
+
+### パフォーマンス監視
+
+- NewRelic でパフォーマンスを監視
+- 重要なクエリやエンドポイントはモニタリングを設定
+
+### エラー監視
+
+- Sentry でエラーを捕捉・監視
+- 重要なエラーは適切な優先度で通知を設定
+
+## Ruby コーディングスタイル
+
+### ドキュメンテーションコメント
+
+- メソッドには、[Yard記法](mdc:https:/rubydoc.info/gems/yard/file/docs/Tags.md#List_of_Available_Tags)でドキュメンテーションコメントをつける
+- @returnもしくは@raiseは必ず記述する 
+- 引数がある場合は @paramを記述する 
+- その他、日本語での説明コメントは不要
+
+### Active Record
+
+- リレーション先のカラムでの絞り込みは`.merge`を使うこと
+- 特定のスコープを持つ`has_one`や`has_many`アソシエーションを定義する場合は、RuboCopの`Rails/HasManyOrHasOneDependent`と`Rails/InverseOf`を無効化し、`dependent`と`inverse_of`の記載を省略すること

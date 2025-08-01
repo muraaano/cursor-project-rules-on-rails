@@ -1,0 +1,212 @@
+---
+description: バックエンドのテスト規約
+globs: spec/**/*.rb
+alwaysApply: false
+---
+# バックエンドテスト規約
+
+## RSpec
+
+- Factory Bot: テストデータ作成
+
+## テスト実装のルール
+
+### RSpec ルール
+
+- テスト対象となるメソッドやスコープは、`subject`を使用して定義する
+  - `subject`は、テストの意図が明確になるようにし、describeの直後に定義する
+- ActiveRecord/ActiveModelのオブジェクトを検証する時は、なるべく `have_attributes` を使うことで、まとめて検証を行う。
+- FactoryBotを使用してテストデータを作成する
+
+  ```
+  # Bad
+  expect(thing.name).to eq name
+  expect(thing.hoge).to eq hoge
+  expect(thing.email).to eq email
+
+  # Good
+  expect(thing).to have_attributes(
+    name,
+    hoge,
+    email,
+  )
+  ```
+
+### 同じケースに対するテスト
+
+- 同じケースに対する複数の検証は、可能な限り1つの `it` ブロックにまとめる
+- 複数の `it` ブロックに分けるのではなく、1つの `it` ブロックで複数の `expect` を使用する
+- `it` の行数が長くなる場合は、一定の塊にわけて記述し、塊の先頭に説明をコメントで記述する
+
+```ruby
+# 良い例
+it "ユーザーが正しく作成されること" do
+  subject
+  expect(user.name).to eq "山田太郎"
+  expect(user.email).to eq "yamada@example.com"
+  expect(user.active).to be true
+end
+
+# 良くない例
+it "nameが正しく設定されること" do
+  subject
+  expect(user.name).to eq "山田太郎"
+end
+
+it "emailが正しく設定されること" do
+  subject
+  expect(user.email).to eq "yamada@example.com"
+end
+
+it "activeがtrueであること" do
+  subject
+  expect(user.active).to be true
+end
+```
+
+### テストデータの作成（FactoryBot）
+
+#### 全般
+
+- ./spec/factories にファイルを作成する
+- ファイル名はモデル名の複数形でスネークケースとする。ネームスペースがある場合は、ネームスペースでディレクトリを分ける
+  例1: Fruitモデルの場合は、`spec/factories/fruits.rb`
+  例2: Food::Fruitモデルの場合は、`spec/factories/food/fruits.rb`
+- factory はモデルごとにファイルを分けてください
+- factory名はモデル名のスネークケースとする。ネームスペースがある場合は、アンダースコアで繋げる
+  例: Food::Fruitモデルの場合は、`food_fruit`とする
+
+#### Factoryの実装
+- それぞれの値はなるべくすべて設定する
+  - nilをテストする場合はテストでfactoryを上書きする
+- それぞれの値はなるべくランダム値を設定する
+
+```ruby
+# 良い例
+FactoryBot.define do
+  factory :fruit do
+    name { ["りんご", "みかん", "レモン"].sample }
+    active { [true, false].sample }
+  end
+end
+
+# 良くない例
+FactoryBot.define do
+  factory :fruit do
+    name { "りんご" }
+    active { true }
+  end
+end
+```
+
+#### 関連付けの実装
+
+- 関連付けは外部キーをもつモデルにのみデフォルトで記述する。 
+- 外部キーをもたないモデルはtraitで記述する。
+  - デフォルトでは with_associations というtraitを記述し、すべての関連するモデルを作成する
+  - 個別にモデルを作成する必要がある場合は別途traitを作成し、 trait名は with_{association}とする
+
+```ruby
+trait :with_users do
+  users { build_list(:user, 2) }
+end
+```
+
+#### 多型関連（STI）のFactory実装
+
+- STI（単一テーブル継承）の場合は個別のfactoryを作成する
+
+```ruby
+# STIの場合（例: SuperUser）
+# 個別のfactoryを作成
+FactoryBot.define do
+  factory :super_user, parent: :user, class: "SuperUser" do
+    type { "SuperUser" }
+  end
+end
+```
+
+### shared_examples
+
+- shared_examples, shared_examples_for, shared_context は原則使用しない
+- 可読性を優先する
+
+## Request spec（API テスト）
+
+- API（/app/controllers/api）はRequest spec（/spec/requests/api）でテストする。
+- 具体的には、committee-rails を使ってリクエスト及びレスポンススキーマの検証を行ってください。
+- 基本方針:
+  - OpenAPI の仕様が存在する API エンドポイントには必ず`assert_schema_conform`を使用する
+  - `assert_schema_conform`を使用する場合は、`expect(response).to have_http_status(:xxx)`のアサーションは不要（重複するため）
+  - OpenAPI の仕様が存在しないエンドポイントでは従来通り`have_http_status`を使用する
+  - 新しい API エンドポイントを実装する場合は、必ず OpenAPI の仕様を先に作成し、committee-rails でテストする
+  - JSONリクエストを送信する場合は必ず`as: :json`を指定する
+
+- `assert_schema_conform`を使用するケース（リクエストとレスポンスの両方を検証）:
+  - 正常系のレスポンス（200）
+  - バリデーションエラー（422）
+  - 不正なリクエスト（400）
+  - リソースが存在しない（404）
+  - その他、リクエストパラメータを持つ API
+- `assert_response_schema_confirm`を使用可能なケース（レスポンスのみ検証）:
+  - 認証エラー（401）
+  - 認可エラー（403）
+
+- 実装例:
+
+  ```ruby
+  # 良い例
+  it "正しいレスポンスが返ってくること" do
+    get api_user_roles_path
+
+    assert_schema_conform(200)
+    expect(response.parsed_body).to match(
+      # レスポンスの内容を検証
+    )
+  end
+
+  # 悪い例（重複したアサーション）
+  it "正しいレスポンスが返ってくること" do
+    get api_user_roles_path
+
+    expect(response).to have_http_status(:ok) # 不要
+    assert_schema_conform(200)
+    expect(response.parsed_body).to match(
+      # レスポンスの内容を検証
+    )
+  end
+  ```
+
+## Model spec
+
+- Model（/app/models）はModel spec（/spec/models）でテストする。
+- 標準のvalidatorを使っているvalidationは基本的にテストしない
+
+## Policy spec
+
+- Policy（/app/policies）Policy spec（/spec/policies）でテストする。
+- 検証にはpundit gemが提供する`permissions` メソッドを使用する
+
+## Validator spec
+
+Validator（/app/validators）はValidator spec（/spec/validators）でテストする。
+以下のようなletを宣言し、テストを行う
+
+```ruby
+let(:dummy_model) do
+  Struct.new(:value) do
+    include ActiveModel::Validations
+
+    def self.name
+      "DummyModel"
+    end
+
+    validates :value, {バリデーション名}: true
+  end
+end
+```
+
+## Serializer spec
+
+Serializer（/app/serializers）は専用のテストを作成しない。
+Request specでAPIのレスポンスを検証することで、Serializerのテストも兼ねる。

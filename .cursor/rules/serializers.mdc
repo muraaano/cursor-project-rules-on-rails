@@ -1,0 +1,21 @@
+---
+description:
+globs: app/serializers/**/*.rb
+alwaysApply: false
+---
+
+# Serializerの実装規約
+
+## 基本方針
+
+- SerializerでAPIレスポンスのフォーマットを定義する
+- Serializerは`app/serializers`に配置する
+- Serializerの名前は、扱うリソースの名前に`Serializer`を付けたものとする
+  - 例： `UserSerializer`
+- 扱うリソースやcontrollerに応じて、namespaceを分ける
+  - 例： `Hoge::UserSerializer`
+- ロジックはなるべくSerializerに含めない
+  - ビジネスロジックはModelに実装する
+  - 表示ロジックはDecoratorに実装する
+- フィールド名はスネークケースで記述する 
+  - OpenAPIスキーマ（openapi.yml）はキャメルケースだが、blueprinter gemが変換する

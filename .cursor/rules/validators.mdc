@@ -1,0 +1,26 @@
+---
+description:
+globs: app/validators/**/*.rb
+alwaysApply: false
+---
+# カスタムValidatorの実装規約
+
+## 基本方針
+
+- 複数のモデルで使用するようなバリデーションは、`app/validators`に実装してする。
+- `ActiveModel::EachValidator` を継承する
+- エラーキーの多言語化翻訳は、`config/locales/defaults/{locale}.yml`の、`{locale}.errors.messages` に記述する。
+日本語の場合は、 `config/locales/defaults/ja.yml`の、`ja.errors.messages` に記述する。
+- エラーキーの名前は他のメッセージを参考にシンプルかつ明確なものにする。
+
+## 実装例
+
+```ruby
+class DecimalPlacesValidator < ActiveModel::EachValidator
+  def validate_each(record, attr_name, value)
+    return if value.blank?
+
+    record.errors.add(attr_name, options[:message] || :invalid_max_decimal_places, count: options[:max])
+  end
+end
+```
