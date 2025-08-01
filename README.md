@@ -25,16 +25,16 @@ Rails向けのCursorプロジェクトルールのテンプレートです！
 
 ## カスタマイズのポイント
 
-プロジェクトごとにリポジトリのディレクトリ構成が異なる場合は、Cursorルールの配置場所やblobsのパスも合わせて調整しましょう。
+プロジェクトごとにリポジトリのディレクトリ構成が異なる場合は、Cursorルールの配置場所やglobsのパスも合わせて調整しましょう。
 
 - **リポジトリのルートに直接Railsアプリがある場合**  
-  テンプレートのまま `.cursor/rules/` 配下にルールファイルを置き、blobsも `app/models/**/*.rb` などそのままのパスで問題ないです。
+  テンプレートのまま `.cursor/rules/` 配下にルールファイルを置き、globsも `app/models/**/*.rb` などそのままのパスで問題ないです。
 
 - **`./backend/` などサブディレクトリにRailsアプリがある場合**  
   ルールファイルも `.cursor/rules/backend/` のようにサブディレクトリを作って配置すると、他の言語やフロントエンドのルールと分けて管理しやすくなります。  
-  例えば、`backend/app/models/**/*.rb` のようにblobsのパスも合わせて変更してください。
+  例えば、`backend/app/models/**/*.rb` のようにglobsのパスも合わせて変更してください。
 
-**例: ディレクトリ構成ごとのルール配置とblobs指定**
+**例: ディレクトリ構成ごとのルール配置とglobs指定**
 
 ルート直下にRailsアプリがある場合：
 ```
@@ -42,8 +42,8 @@ Rails向けのCursorプロジェクトルールのテンプレートです！
 ├── app/
 ├── .cursor/
 │   └── rules/
-│       ├── models.md（blobs: app/models/**/*.rb など）
-│       └── controllers.md（blobs: app/controllers/**/*.rb など）
+│       ├── models.md（globs: app/models/**/*.rb など）
+│       └── controllers.md（globs: app/controllers/**/*.rb など）
 ```
 
 `backend/` 配下にRailsアプリがある場合：
@@ -55,8 +55,8 @@ Rails向けのCursorプロジェクトルールのテンプレートです！
 ├── .cursor/
 │   └── rules/
 │       └── backend/
-│           ├── models.md（blobs: backend/app/models/**/*.rb など）
-│           └── controllers.md（blobs: backend/app/controllers/**/*.rb など）
+│           ├── models.md（globs: backend/app/models/**/*.rb など）
+│           └── controllers.md（globs: backend/app/controllers/**/*.rb など）
 ```
 
 ### その他
