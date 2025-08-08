@@ -23,6 +23,16 @@ Rails向けのCursorプロジェクトルールのテンプレートです！
 1. [muraaano/cursor-project-rules-on-rails](https://github.com/muraaano/cursor-project-rules-on-rails)リポジトリをクローンする
 2. `.cursor/rules` 以下を導入したいリポジトリにコピーする
 
+### 設定されているルールの一例
+
+1. **Controller実装規約** - DHHルーティングに従い、routes.rbでresourcesおよびresourceによって宣言できるアクション（index, show, create, update, destroy）のみを定義する
+
+2. **ドキュメンテーションコメント** - メソッドにはYard記法でドキュメンテーションコメントをつけ、@returnもしくは@raiseを必ず記述する
+
+3. **マイグレーションファイル規約** - Date型カラムは末尾に`_date`、DateTime型カラムは末尾に`_at`をつけ、カラムには論理名（日本語）をコメントとして追加する
+
+4. **テスト実装ルール** - テスト対象のメソッドやスコープは`subject`を使用して定義し、ActiveRecord/ActiveModelのオブジェクト検証には`have_attributes`を使用する
+
 ## カスタマイズのポイント
 
 プロジェクトごとにリポジトリのディレクトリ構成が異なる場合は、Cursorルールの配置場所やglobsのパスも合わせて調整しましょう。
